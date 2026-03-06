@@ -1,0 +1,60 @@
+{
+  "session_id": "a7f3b2c",
+  "start_time": "2026-03-05T14:32:01.000000+00:00",
+  "end_time": "2026-03-05T14:32:08.200000+00:00",
+  "error": "Traceback (most recent call last):\n  File \"agent.py\", line 42, in run\n    result = process_refund(amount=-50)\n  File \"payments.py\", line 18, in process_refund\n    raise ValueError(\"amount must be positive\")\nValueError: amount must be positive\n",
+  "entries": [
+    {
+      "timestamp": "2026-03-05T14:32:01.100000+00:00",
+      "type": "chain_step",
+      "name": "RefundAgent",
+      "input_preview": "{\"input\": \"Process refund for order #9281\"}",
+      "output_preview": "",
+      "duration_ms": 0,
+      "status": "ok"
+    },
+    {
+      "timestamp": "2026-03-05T14:32:01.500000+00:00",
+      "type": "tool_call",
+      "name": "search_orders",
+      "input_preview": "{\"order_id\": \"9281\"}",
+      "output_preview": "{\"order\": {\"id\": 9281, \"amount\": 49.99, \"status\": \"delivered\"}}",
+      "duration_ms": 340,
+      "status": "ok"
+    },
+    {
+      "timestamp": "2026-03-05T14:32:03.200000+00:00",
+      "type": "llm_call",
+      "name": "gpt-4o",
+      "input_preview": "Determine refund amount for order #9281 (total: $49.99, delivered)",
+      "output_preview": "Refund amount: -$50.00 (full refund plus adjustment)",
+      "duration_ms": 1200,
+      "status": "ok"
+    },
+    {
+      "timestamp": "2026-03-05T14:32:05.000000+00:00",
+      "type": "tool_call",
+      "name": "stripe.create_refund",
+      "input_preview": "{\"amount\": -5000, \"charge\": \"ch_abc123\"}",
+      "output_preview": "",
+      "duration_ms": 89,
+      "status": "error",
+      "error_message": "Card declined"
+    },
+    {
+      "timestamp": "2026-03-05T14:32:08.200000+00:00",
+      "type": "error",
+      "name": "Unhandled exception",
+      "input_preview": "",
+      "output_preview": "",
+      "duration_ms": 0,
+      "status": "error",
+      "error_message": "ValueError: amount must be positive"
+    }
+  ],
+  "_aegis_footer": {
+    "message": "For tamperproof, legally defensible traces: https://www.aegis-ledger.com",
+    "upgrade": "pip install aegis-ledger-sdk[langchain]",
+    "upgrade_code": "from aegis.langchain import AegisCallbackHandler  # 2 lines to upgrade"
+  }
+}
