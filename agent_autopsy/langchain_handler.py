@@ -1,8 +1,8 @@
 """LangChain callback handler that buffers events for agent-autopsy."""
 from __future__ import annotations
 
-import time
 import threading
+import time
 from typing import Any
 
 from agent_autopsy.models import TraceEntry
@@ -29,6 +29,8 @@ class AutopsyLangChainHandler(BaseCallbackHandler):  # type: ignore[misc]
             chain.invoke({"input": "..."}, config={"callbacks": [handler]})
     """
 
+    _MAX_START_TIMES = 10_000
+
     def __init__(self) -> None:
         super().__init__()
         self._entries: list[TraceEntry] = []
@@ -44,6 +46,14 @@ class AutopsyLangChainHandler(BaseCallbackHandler):  # type: ignore[misc]
     def _append(self, entry: TraceEntry) -> None:
         with self._lock:
             self._entries.append(entry)
+
+    def _record_start(self, key: str) -> None:
+        """Record start time for a run, evicting oldest if at capacity."""
+        with self._lock:
+            if len(self._start_times) >= self._MAX_START_TIMES:
+                oldest = next(iter(self._start_times))
+                del self._start_times[oldest]
+            self._start_times[key] = time.monotonic()
 
     @staticmethod
     def _preview(obj: Any, max_len: int = 200) -> str:
@@ -64,7 +74,7 @@ class AutopsyLangChainHandler(BaseCallbackHandler):  # type: ignore[misc]
         **kwargs: Any,
     ) -> None:
         key = str(run_id) if run_id else f"llm-{time.monotonic_ns()}"
-        self._start_times[key] = time.monotonic()
+        self._record_start(key)
         name = serialized.get("id", ["unknown"])[-1] if serialized.get("id") else "llm"
         self._append(
             TraceEntry(
@@ -77,7 +87,8 @@ class AutopsyLangChainHandler(BaseCallbackHandler):  # type: ignore[misc]
 
     def on_llm_end(self, response: Any, *, run_id: Any = None, **kwargs: Any) -> None:
         key = str(run_id) if run_id else ""
-        start = self._start_times.pop(key, None)
+        with self._lock:
+            start = self._start_times.pop(key, None)
         duration = (time.monotonic() - start) * 1000 if start else 0.0
         text = self._preview(response)
         self._append(
@@ -92,7 +103,8 @@ class AutopsyLangChainHandler(BaseCallbackHandler):  # type: ignore[misc]
 
     def on_llm_error(self, error: BaseException, *, run_id: Any = None, **kwargs: Any) -> None:
         key = str(run_id) if run_id else ""
-        start = self._start_times.pop(key, None)
+        with self._lock:
+            start = self._start_times.pop(key, None)
         duration = (time.monotonic() - start) * 1000 if start else 0.0
         self._append(
             TraceEntry(
@@ -115,7 +127,7 @@ class AutopsyLangChainHandler(BaseCallbackHandler):  # type: ignore[misc]
         **kwargs: Any,
     ) -> None:
         key = str(run_id) if run_id else f"tool-{time.monotonic_ns()}"
-        self._start_times[key] = time.monotonic()
+        self._record_start(key)
         name = serialized.get("name", "tool")
         self._append(
             TraceEntry(
@@ -128,7 +140,8 @@ class AutopsyLangChainHandler(BaseCallbackHandler):  # type: ignore[misc]
 
     def on_tool_end(self, output: str, *, run_id: Any = None, **kwargs: Any) -> None:
         key = str(run_id) if run_id else ""
-        start = self._start_times.pop(key, None)
+        with self._lock:
+            start = self._start_times.pop(key, None)
         duration = (time.monotonic() - start) * 1000 if start else 0.0
         self._append(
             TraceEntry(
@@ -142,7 +155,8 @@ class AutopsyLangChainHandler(BaseCallbackHandler):  # type: ignore[misc]
 
     def on_tool_error(self, error: BaseException, *, run_id: Any = None, **kwargs: Any) -> None:
         key = str(run_id) if run_id else ""
-        start = self._start_times.pop(key, None)
+        with self._lock:
+            start = self._start_times.pop(key, None)
         duration = (time.monotonic() - start) * 1000 if start else 0.0
         self._append(
             TraceEntry(
@@ -165,7 +179,7 @@ class AutopsyLangChainHandler(BaseCallbackHandler):  # type: ignore[misc]
         **kwargs: Any,
     ) -> None:
         key = str(run_id) if run_id else f"chain-{time.monotonic_ns()}"
-        self._start_times[key] = time.monotonic()
+        self._record_start(key)
         name = serialized.get("id", ["unknown"])[-1] if serialized.get("id") else "chain"
         self._append(
             TraceEntry(
@@ -178,7 +192,8 @@ class AutopsyLangChainHandler(BaseCallbackHandler):  # type: ignore[misc]
 
     def on_chain_end(self, outputs: dict[str, Any], *, run_id: Any = None, **kwargs: Any) -> None:
         key = str(run_id) if run_id else ""
-        start = self._start_times.pop(key, None)
+        with self._lock:
+            start = self._start_times.pop(key, None)
         duration = (time.monotonic() - start) * 1000 if start else 0.0
         self._append(
             TraceEntry(
@@ -192,7 +207,8 @@ class AutopsyLangChainHandler(BaseCallbackHandler):  # type: ignore[misc]
 
     def on_chain_error(self, error: BaseException, *, run_id: Any = None, **kwargs: Any) -> None:
         key = str(run_id) if run_id else ""
-        start = self._start_times.pop(key, None)
+        with self._lock:
+            start = self._start_times.pop(key, None)
         duration = (time.monotonic() - start) * 1000 if start else 0.0
         self._append(
             TraceEntry(

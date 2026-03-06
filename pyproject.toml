@@ -9,7 +9,7 @@ description = "Debug AI agent failures with zero-config execution traces"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
-authors = [{ name = "Aegis Ledger" }]
+authors = [{ name = "Aegis Ledger", email = "info@aegis-ledger.com" }]
 keywords = ["ai-agents", "debugging", "tracing", "langchain", "agents"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -19,13 +19,14 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Debuggers",
 ]
 dependencies = []
 
 [project.optional-dependencies]
 langchain = ["langchain-core>=0.1"]
-dev = ["pytest>=8.0", "pytest-cov>=5.0"]
+dev = ["pytest>=8.0", "pytest-cov>=5.0", "mypy>=1.10", "ruff>=0.4"]
 
 [project.scripts]
 autopsy = "agent_autopsy.cli:main"

@@ -10,16 +10,37 @@ from agent_autopsy.models import TraceEntry, TraceSession
 from agent_autopsy.renderer import render
 
 
+def _safe_float(value: object) -> float:
+    """Convert value to float, returning 0.0 on failure."""
+    try:
+        return float(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def _load_session(filepath: Path) -> TraceSession:
-    """Load a TraceSession from a JSON file."""
+    """Load a TraceSession from a JSON file.
+
+    Validates that the JSON has required structure and warns
+    on missing fields rather than silently using defaults.
+    """
     data = json.loads(filepath.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"Expected JSON object in {filepath}, got {type(data).__name__}")
+    if "session_id" not in data:
+        print(f"Warning: {filepath} missing 'session_id' field", file=sys.stderr)
+    if "entries" not in data:
+        print(f"Warning: {filepath} missing 'entries' field", file=sys.stderr)
     session = TraceSession(
         session_id=data.get("session_id", "unknown"),
         start_time=data.get("start_time", ""),
         end_time=data.get("end_time"),
         error=data.get("error"),
     )
-    for entry_data in data.get("entries", []):
+    raw_entries = data.get("entries", [])
+    if not isinstance(raw_entries, list):
+        raise ValueError(f"Expected 'entries' to be a list, got {type(raw_entries).__name__}")
+    for entry_data in raw_entries:
         session.entries.append(
             TraceEntry(
                 timestamp=entry_data.get("timestamp", ""),
@@ -27,7 +48,7 @@ def _load_session(filepath: Path) -> TraceSession:
                 name=entry_data.get("name", ""),
                 input_preview=entry_data.get("input_preview", ""),
                 output_preview=entry_data.get("output_preview", ""),
-                duration_ms=float(entry_data.get("duration_ms", 0)),
+                duration_ms=_safe_float(entry_data.get("duration_ms", 0)),
                 status=entry_data.get("status", "ok"),
                 error_message=entry_data.get("error_message"),
             )
@@ -40,6 +61,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="autopsy",
         description="Debug AI agent failures with execution traces",
+    )
+    parser.add_argument(
+        "--version", action="version", version="%(prog)s 0.1.0"
     )
     subparsers = parser.add_subparsers(dest="command")
 
@@ -64,14 +88,18 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Error: file not found: {filepath}", file=sys.stderr)
             return 1
 
-        if args.raw:
-            data = json.loads(filepath.read_text(encoding="utf-8"))
-            print(json.dumps(data, indent=2))
-            return 0
+        try:
+            if args.raw:
+                data = json.loads(filepath.read_text(encoding="utf-8"))
+                print(json.dumps(data, indent=2))
+                return 0
 
-        session = _load_session(filepath)
-        render(session, file=sys.stdout)
-        return 0
+            session = _load_session(filepath)
+            render(session, file=sys.stdout)
+            return 0
+        except (json.JSONDecodeError, ValueError, KeyError, OSError) as exc:
+            print(f"Error: invalid trace file: {exc}", file=sys.stderr)
+            return 1
 
     return 1
 

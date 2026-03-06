@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import json
+import re
+import sys
 import threading
 import traceback
 from datetime import datetime, timezone
@@ -44,6 +46,10 @@ class Autopsy:
         prefix: str = "autopsy",
         handler: AutopsyLangChainHandler | None = None,
     ) -> None:
+        if not re.fullmatch(r"[a-zA-Z0-9_-]{1,32}", prefix):
+            raise ValueError(
+                f"prefix must be 1-32 alphanumeric/dash/underscore chars, got {prefix!r}"
+            )
         self._output_dir = Path(output_dir)
         self._prefix = prefix
         self._handler = handler
@@ -117,9 +123,21 @@ class Autopsy:
             error_message=f"{exc_type.__name__}: {exc_val}" if exc_type else str(exc_val),
         )
 
-        self._write_json()
+        try:
+            self._write_json()
+        except Exception as write_err:
+            print(f"Warning: failed to write trace file: {write_err}", file=sys.stderr)
         # Do NOT suppress the exception — let it propagate
         return False
+
+    def on_text(self, text: str, *, name: str = "stream") -> None:
+        """Log a streaming text event (e.g. LLM token output).
+
+        This is a lightweight callback for streaming integrations.
+        Text events are logged as ``chain_step`` entries with the
+        output_preview set to the text content.
+        """
+        self.log("chain_step", name, output=text[:500])
 
     # -- private -------------------------------------------------------------
 

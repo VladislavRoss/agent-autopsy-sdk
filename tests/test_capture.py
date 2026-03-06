@@ -132,3 +132,77 @@ class TestThreadSafety:
         # All manual entries + 1 error entry
         expected = num_threads * entries_per_thread + 1
         assert len(data["entries"]) == expected
+
+
+class _FailingWriteAutopsy(Autopsy):
+    """Subclass that fails on _write_json to simulate disk errors."""
+
+    def _write_json(self) -> None:
+        raise IOError("disk full")
+
+
+class TestWriteFailureSafety:
+    """__exit__ must not replace the original exception when write fails."""
+
+    def test_write_failure_in_exit_does_not_replace_exception(
+        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """When _write_json raises inside __exit__, the original exception propagates."""
+        with pytest.raises(RuntimeError, match="original error"):
+            with _FailingWriteAutopsy(output_dir=tmp_path) as trace:
+                trace.log("tool_call", "search", duration_ms=10)
+                raise RuntimeError("original error")
+
+        captured = capsys.readouterr()
+        assert "disk full" in captured.err
+
+    def test_session_accessible_without_context_manager(self, tmp_path: Path) -> None:
+        """Autopsy can be used to access session directly (no with-block)."""
+        trace = Autopsy(output_dir=tmp_path)
+        trace.log("observation", "check_status", duration_ms=5)
+        assert len(trace.session.entries) == 1
+        assert trace.session.entries[0].type == "observation"
+
+
+class TestOnText:
+    """Tests for the on_text() streaming callback."""
+
+    def test_on_text_creates_chain_step_entry(self, tmp_path: Path) -> None:
+        trace = Autopsy(output_dir=tmp_path)
+        trace.on_text("Hello world")
+        assert len(trace.session.entries) == 1
+        entry = trace.session.entries[0]
+        assert entry.type == "chain_step"
+        assert entry.name == "stream"
+        assert entry.output_preview == "Hello world"
+
+    def test_on_text_custom_name(self, tmp_path: Path) -> None:
+        trace = Autopsy(output_dir=tmp_path)
+        trace.on_text("token data", name="llm_stream")
+        assert trace.session.entries[0].name == "llm_stream"
+
+    def test_on_text_truncates_long_output(self, tmp_path: Path) -> None:
+        trace = Autopsy(output_dir=tmp_path)
+        long_text = "x" * 1000
+        trace.on_text(long_text)
+        assert len(trace.session.entries[0].output_preview) == 500
+
+
+class TestPrefixValidation:
+    """Tests for prefix parameter validation (path traversal prevention)."""
+
+    def test_valid_prefix(self, tmp_path: Path) -> None:
+        trace = Autopsy(output_dir=tmp_path, prefix="my-trace_01")
+        assert trace._prefix == "my-trace_01"
+
+    def test_rejects_path_traversal(self, tmp_path: Path) -> None:
+        with pytest.raises(ValueError, match="prefix must be"):
+            Autopsy(output_dir=tmp_path, prefix="../../../etc")
+
+    def test_rejects_empty_prefix(self, tmp_path: Path) -> None:
+        with pytest.raises(ValueError, match="prefix must be"):
+            Autopsy(output_dir=tmp_path, prefix="")
+
+    def test_rejects_too_long_prefix(self, tmp_path: Path) -> None:
+        with pytest.raises(ValueError, match="prefix must be"):
+            Autopsy(output_dir=tmp_path, prefix="a" * 33)
