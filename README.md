@@ -16,7 +16,7 @@ debugging, sharing, or replaying.
 +======================================================+
 |                                                      |
 |  |- [tool_call] search_orders ........... v 340ms    |
-|  |- [llm_call] gpt-4o .................. v 1.2s      |
+|  |- [llm_call] gpt-4o ................... v 1.2s     |
 |  |- [tool_call] stripe.create_refund .... x 89ms     |
 |  |   +-- ERROR: Card declined                        |
 |  +- [error] Unhandled exception ......... x 0ms      |
