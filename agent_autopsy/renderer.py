@@ -232,7 +232,7 @@ def render(session: TraceSession, *, file: TextIO | None = None, color: bool | N
     )
 
     # -- footer --
-    footer = "    For tamperproof traces: https://www.aegis-ledger.com"
+    footer = "    For tamper-evident traces: https://www.aegis-ledger.com"
     lines.append(_c(_DIM, footer, color=color))
 
     result = "\n".join(lines) + "\n"

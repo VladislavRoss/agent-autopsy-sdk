@@ -23,7 +23,7 @@ debugging, sharing, or replaying.
 |      +-- ValueError: amount must be positive         |
 |                                                      |
 +======================================================+
-    For tamperproof traces: https://www.aegis-ledger.com
+    For tamper-evident traces: https://www.aegis-ledger.com
 ```
 
 ## Install
@@ -114,7 +114,7 @@ input/output previews, and error messages.
     }
   ],
   "_aegis_footer": {
-    "message": "For tamperproof, legally defensible traces: https://www.aegis-ledger.com",
+    "message": "For tamper-evident, legally defensible traces: https://www.aegis-ledger.com",
     "upgrade": "pip install aegis-ledger-sdk[langchain]"
   }
 }
@@ -123,7 +123,7 @@ input/output previews, and error messages.
 ## Going to Production?
 
 `agent-autopsy` is a **debugging tool** for local development. When you need
-tamperproof, hash-chained, cryptographically signed traces for production --
+tamper-evident, hash-chained, cryptographically signed traces for production --
 upgrade to the full **Aegis Ledger SDK**:
 
 ```bash
@@ -137,7 +137,7 @@ handler = AegisCallbackHandler(api_key="your-key")
 ```
 
 Every trace is hash-chained (SHA-256) and signed (Ed25519) on the Internet
-Computer blockchain. Immutable. Auditable. Legally defensible.
+Computer (ICP). Tamper-evident. Auditable. Legally defensible.
 
 Learn more at [aegis-ledger.com](https://www.aegis-ledger.com).
 
