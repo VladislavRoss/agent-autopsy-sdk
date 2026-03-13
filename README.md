@@ -1,4 +1,4 @@
-# Agent Autopsy
+# agent-autopsy
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -16,7 +16,7 @@ debugging, sharing, or replaying.
 +======================================================+
 |                                                      |
 |  |- [tool_call] search_orders ........... v 340ms    |
-|  |- [llm_call] gpt-4o ................... v 1.2s     |
+|  |- [llm_call] gpt-4o .................. v 1.2s      |
 |  |- [tool_call] stripe.create_refund .... x 89ms     |
 |  |   +-- ERROR: Card declined                        |
 |  +- [error] Unhandled exception ......... x 0ms      |
@@ -137,7 +137,7 @@ handler = AegisCallbackHandler(api_key="your-key")
 ```
 
 Every trace is hash-chained (SHA-256) and signed (Ed25519) on the Internet
-Computer (ICP). Tamper-evident. Auditable. Legally defensible.
+Computer. Tamper-evident. Auditable. Legally defensible.
 
 Learn more at [aegis-ledger.com](https://www.aegis-ledger.com).
 
