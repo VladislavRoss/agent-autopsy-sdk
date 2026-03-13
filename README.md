@@ -136,8 +136,8 @@ from aegis.langchain import AegisCallbackHandler
 handler = AegisCallbackHandler(api_key="your-key")
 ```
 
-Every trace is hash-chained (SHA-256) and signed (Ed25519) on the Internet
-Computer. Tamper-evident. Auditable. Legally defensible.
+Every trace is hash-chained (SHA-256) and signed (Ed25519 or Post-Quantum) on the
+Internet Computer. Tamper-evident. Auditable. Legally defensible.
 
 Learn more at [aegis-ledger.com](https://www.aegis-ledger.com).
 
