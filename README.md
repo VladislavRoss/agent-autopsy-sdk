@@ -131,13 +131,15 @@ pip install aegis-ledger-sdk[langchain]
 ```
 
 ```python
-# 2 lines to upgrade from agent-autopsy to production tracing:
+# Upgrade from agent-autopsy to production tracing:
+from aegis import AegisClient
 from aegis.langchain import AegisCallbackHandler
-handler = AegisCallbackHandler(api_key="your-key")
+client = AegisClient(canister_id="...", api_key_id="...", private_key_path="./key.pem", agent_id="my-agent")
+handler = AegisCallbackHandler(client)
 ```
 
-Every trace is hash-chained (SHA-256) and signed (Ed25519 or Post-Quantum) on the
-Internet Computer. Tamper-evident. Auditable. Legally defensible.
+Every trace is hash-chained (SHA-256) and signed (Ed25519) on the Internet
+Computer. Tamper-evident. Auditable. Legally defensible.
 
 Learn more at [aegis-ledger.com](https://www.aegis-ledger.com).
 
