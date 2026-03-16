@@ -3,10 +3,10 @@ from __future__ import annotations
 
 import sys
 from datetime import datetime
-from typing import TextIO
+from typing import TYPE_CHECKING, TextIO
 
-from agent_autopsy.models import TraceEntry, TraceSession
-
+if TYPE_CHECKING:
+    from agent_autopsy.models import TraceSession
 
 # -- ANSI colour helpers -----------------------------------------------------
 
@@ -171,7 +171,8 @@ def render(session: TraceSession, *, file: TextIO | None = None, color: bool | N
     for i, entry in enumerate(entries):
         is_last = i == len(entries) - 1
         connector = _TREE_LAST if is_last else _TREE_MID
-        status_icon = _c(_GREEN, "v", color=color) if entry.status == "ok" else _c(_RED, "x", color=color)
+        is_ok = entry.status == "ok"
+        status_icon = _c(_GREEN, "v", color=color) if is_ok else _c(_RED, "x", color=color)
         name = _truncate(entry.name)
         type_tag = f"[{entry.type}]"
         dur = _fmt_duration(entry.duration_ms)

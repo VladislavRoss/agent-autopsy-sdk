@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Literal
-
 
 EntryType = Literal["tool_call", "llm_call", "chain_step", "error"]
 EntryStatus = Literal["ok", "error"]

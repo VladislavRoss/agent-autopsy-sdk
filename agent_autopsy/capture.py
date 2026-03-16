@@ -8,13 +8,14 @@ import threading
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
-from types import TracebackType
 from typing import TYPE_CHECKING, Any
 
 from agent_autopsy._footer import AEGIS_FOOTER
 from agent_autopsy.models import EntryStatus, EntryType, TraceEntry, TraceSession
 
 if TYPE_CHECKING:
+    from types import TracebackType
+
     from agent_autopsy.langchain_handler import AutopsyLangChainHandler
 
 

@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 from agent_autopsy import Autopsy
 from agent_autopsy.langchain_handler import AutopsyLangChainHandler
@@ -124,10 +127,9 @@ class TestHandlerWithAutopsy:
         handler.on_tool_start(serialized={"name": "web"}, input_str="q", run_id="r1")
         handler.on_tool_end(output="result", run_id="r1")
 
-        with pytest.raises(ValueError):
-            with Autopsy(output_dir=tmp_path, handler=handler) as trace:
-                trace.log("llm_call", "model", duration_ms=100)
-                raise ValueError("fail")
+        with pytest.raises(ValueError), Autopsy(output_dir=tmp_path, handler=handler) as trace:
+            trace.log("llm_call", "model", duration_ms=100)
+            raise ValueError("fail")
 
         data = json.loads(next(tmp_path.glob("*.json")).read_text())
         # 1 manual + 2 from handler + 1 auto error = 4
@@ -137,7 +139,7 @@ class TestHandlerWithAutopsy:
         handler = AutopsyLangChainHandler()
         handler.on_tool_start(serialized={"name": "web"}, input_str="q", run_id="r1")
 
-        with Autopsy(output_dir=tmp_path, handler=handler) as trace:
+        with Autopsy(output_dir=tmp_path, handler=handler) as _trace:
             pass
 
         assert list(tmp_path.glob("*.json")) == []

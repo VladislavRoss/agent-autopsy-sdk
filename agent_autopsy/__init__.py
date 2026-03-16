@@ -1,4 +1,4 @@
-"""agent-autopsy -- Debug AI agent failures with zero-config execution traces."""
+"""agent-autopsy -- Debug AI agent failures with minimal-config execution traces."""
 from __future__ import annotations
 
 __version__ = "0.1.0"

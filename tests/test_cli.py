@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import shutil
 from pathlib import Path
 
 import pytest
@@ -73,7 +72,9 @@ class TestCliEdgeCases:
 class TestCliIOErrors:
     """OSError / PermissionError handling."""
 
-    def test_view_permission_error(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_view_permission_error(
+        self, tmp_path: Path, capsys: pytest.CaptureFixture[str],
+    ) -> None:
         """File that triggers an OSError (e.g. unreadable) returns rc=1."""
         import unittest.mock as mock
 
