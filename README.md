@@ -114,7 +114,7 @@ input/output previews, and error messages.
     }
   ],
   "_aegis_footer": {
-    "message": "For tamper-evident, legally defensible traces: https://www.aegis-ledger.com",
+    "message": "For tamper-evident, cryptographically verifiable traces: https://www.aegis-ledger.com",
     "upgrade": "pip install aegis-ledger-sdk[langchain]"
   }
 }
