@@ -1,5 +1,6 @@
 # agent-autopsy
 
+[![PyPI](https://img.shields.io/pypi/v/agent-autopsy-sdk)](https://pypi.org/project/agent-autopsy-sdk/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 
@@ -127,7 +128,7 @@ tamper-evident, hash-chained, cryptographically signed traces for production --
 upgrade to the full **Aegis Ledger SDK**:
 
 ```bash
-pip install aegis-ledger-sdk[langchain]
+pip install aegis-ledger-sdk
 ```
 
 ```python
@@ -138,8 +139,8 @@ client = AegisClient(canister_id="...", api_key_id="...", private_key_path="./ke
 handler = AegisCallbackHandler(client)
 ```
 
-Every trace is hash-chained (SHA-256) and signed (Ed25519) on the Internet
-Computer. Tamper-evident. Auditable. Legally defensible.
+Every trace is hash-chained (SHA-256) and signed (Ed25519 or Post-Quantum: ML-DSA-65, ML-DSA-87, SLH-DSA-128s, Hybrid) on the Internet
+Computer. Tamper-evident. Auditable. Cryptographically verifiable.
 
 Learn more at [aegis-ledger.com](https://www.aegis-ledger.com).
 
